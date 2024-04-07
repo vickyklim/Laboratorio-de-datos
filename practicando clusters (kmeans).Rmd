@@ -1,0 +1,293 @@
+---
+title: "R Notebook"
+output: html_notebook
+---
+
+Simulación buena
+
+Generamos los datos de la clase A
+
+```{r}
+
+set.seed(23)
+a1 = runif(50,2,4)
+a2 = runif(50,1,2)
+
+datosa = c(a1,a2)
+clasea = matrix(datosa, ncol = 2, nrow = 50, byrow = FALSE)
+clasea= as.data.frame(claseA)
+
+
+```
+
+Generamos los datos de la clase B
+
+```{r}
+b1 = rnorm(50,0,1)
+b2 = rnorm(50,0,1)
+
+datosb = c(b1,b2)
+claseb = matrix(datosb, ncol = 2, nrow = 50, byrow = FALSE)
+claseb = as.data.frame(claseB)
+```
+
+Generamos los datos de la clase C
+
+```{r}
+
+c1 = runif(50,1,2)
+c2 = runif(50,-1,2)
+
+datosc = c(c1,c2)
+clasec = matrix(datosc, ncol = 2, nrow = 50, byrow = FALSE)
+clasec = as.data.frame(claseC)
+
+
+```
+
+Graficamos los tres conjuntos de datos con distintos colores
+
+```{r}
+
+library(ggplot2)
+
+ggplot()+
+  geom_point(data = clasea, aes(V1,V2),fill ="dark green", color="dark green",size=1,shape = 21) + 
+  geom_point(data = claseb, aes(V1,V2),fill ="red", color="red",size=1,shape = 21)+
+ geom_point(data = clasec, aes(V1,V2),fill ="blue", color="blue",size=1,shape = 21) +
+  labs(x="x",y="y") +
+  ggtitle("Plot Combinado")
+
+```
+
+Efectuamos el clustering de k medias
+
+```{r}
+#armo una matriz con dos columnas que junten todos los datos y la convierto en data frame
+V1 = c(a1,b1,c1)
+V2 = c(a2,b2,c2)
+
+datos = c(V1,V2)
+datos = matrix(datos, ncol = 2, nrow = 150, byrow = FALSE)
+datos = as.data.frame(datos)
+
+k = kmeans(datos,3)
+k
+```
+
+Graficamos
+
+```{r}
+
+datos$cluster <- k$cluster
+ggplot() + geom_point(aes(x = V1, y = V2, color = cluster), data = datos, size = 1) +
+  scale_colour_gradientn(colours=rainbow(4)) +
+  geom_point(aes(x = k$centers[, 1], y = k$centers[, 2]), color = 'black', size = 3) + 
+  ggtitle('Clusters de Datos con k = 8 / K-Medios') + 
+  xlab('X') + ylab('Y')
+
+```
+
+Simulación mala
+
+
+
+```{r}
+
+Ta = runif(100,0,2*pi)
+Ra = runif(100,0,1)
+Xa = Ra * cos(Ta)
+Ya = Ra * sin(Ta)
+
+
+```
+
+
+
+```{r}
+Tb = runif(100,0,2*pi)
+Rb = runif(100,2,2.5)
+Xb = Rb * cos(Tb)
+Yb = Rb * sin(Tb)
+
+
+```
+
+Graficamos ambos conjuntos con distintos colores
+
+```{r}
+
+claseAbis = matrix(datosabis, ncol = 2, nrow = 100, byrow = FALSE)
+claseAbis = as.data.frame(claseAbis)
+claseBbis = matrix(datosbbis, ncol = 2, nrow = 100, byrow = FALSE)
+claseBbis = as.data.frame(claseBbis)
+
+ggplot()+
+  geom_point(data = claseAbis, aes(V1,V2),fill ="dark green", color="dark green",size=1,shape = 21) + 
+  geom_point(data = claseBbis, aes(V1,V2),fill ="red", color="red",size=1,shape = 21) +
+  labs(x="x",y="y") +
+  ggtitle("Plot Combinado")
+
+clasesX = c(Xa,Xb)
+clasesY = c(Ya,Yb)
+vector2 = c(clasesX,clasesY)
+clasesII = as.data.frame(matrix(vector2, ncol = 2, nrow = 200, byrow = FALSE))
+kmedias2 = kmeans(clasesII,2)
+
+ggplot() + geom_point(aes(x = clasesX, y = clasesY, color = (kmedias2$cluster)), data = clasesII, size = 2) +
+  geom_point(aes(x = kmedias2$centers[, 1], y = kmedias2$centers[, 2]), color = 'red', size = 4) + 
+  ggtitle('Gráfico Clusters K-Medias') + 
+  xlab('X') + ylab('Y')
+
+```
+```{r}
+datosProductos = read.table("productos.txt", header = TRUE, sep = " ")
+
+datosFiltrados = subset(datosProductos, select = c('Precio','Marketing'))
+
+kproductos = kmeans(datosFiltrados,2)
+
+install.packages("ggplot2")
+library("ggplot2")
+
+ggplot()+
+  geom_point(data = datosProductos, aes(x=Precio,y=Marketing,color=Resultado),fill ="dark green",size=1,shape = 21) + 
+  labs(x="x",y="y") +
+  ggtitle("Plot Original")
+
+
+datosFiltrados$cluster <- kproductos$cluster
+ggplot() +   geom_point(aes(x = Precio, y = Marketing, color = factor(cluster)), data = datosFiltrados, size = 1) +
+  geom_point(aes(x = kproductos$centers[, 1], y = kproductos$centers[, 2]), color = 'black', size = 3) +
+  ggtitle('Clusters de Datos con k = 2 / K-Medios') +
+  xlab('Precio') + ylab('Marketing') +
+  scale_color_discrete(name = 'Cluster', labels = c('Cluster 1', 'Cluster 2'))
+
+```
+
+```{r}
+precioPromedio = mean(datosFiltrados$Precio)
+MarketingPromedio = mean(datosFiltrados$Marketing)
+
+sdPrecio = sd(datosFiltrados$Precio)
+sdMarketing = sd(datosFiltrados$Marketing)
+
+#DOS MANERAS DE ESTANDARIZAR
+precioEstandarizado <- (datosFiltrados$Precio  - precioPromedio) / sdPrecio
+MarketingEstandarizado <- (datosFiltrados$Marketing  - MarketingPromedio) / sdMarketing
+
+datosEstandarizados = as.data.frame(matrix(c(precioEstandarizado, MarketingEstandarizado), ncol = 2, nrow = 45, byrow = FALSE))
+
+datosEstandarizados= as.data.frame(scale(datosFiltrados))
+
+kproductosest = kmeans(datosEstandarizados,2)
+datosEstandarizados$cluster <- kproductosest$cluster
+#PLOT
+plot(x = datosEstandarizados$Precio, y = datosEstandarizados$Marketing, pch=19)
+
+#GGPLOT
+ggplot(data = datosProductos, aes(x= Precio, y = Marketing, fill = factor(Resultado))) +
+  geom_point(color = "dark green", size = 1, shape = 21) +
+  scale_fill_manual(values = c("red", "blue")) +
+  labs(x = "Precio", y = "Marketing", fill = "Resultado") +
+  ggtitle("Plot Original")
+
+ggplot() +
+  geom_point(aes(x = Precio, y = Marketing, color = factor(cluster)), data = datosFiltrados, size = 1) +
+  geom_point(aes(x = kproductos$centers[, 1], y = kproductos$centers[, 2]), color = 'black', size = 3) +
+  ggtitle('Clusters de Datos con k = 2') +
+  xlab('Precio') + ylab('Marketing') +
+  scale_color_discrete(name = 'Cluster', labels = c('Cluster 1', 'Cluster 2'))
+
+
+ggplot() + 
+  geom_point(aes(x = Precio, y = Marketing, color = factor(cluster)), data = datosEstandarizados, size = 1) +
+  geom_point(aes(x = kproductosest$centers[, 1], y = kproductosest$centers[, 2]), color = 'black', size = 3) + 
+  ggtitle('Clusters de Datos con k = 2 estandarizado') + 
+  xlab('X') + ylab('Y') +
+scale_color_discrete(name = 'Cluster', labels = c('Cluster 1', 'Cluster 2'))
+
+```
+
+```{r}
+install.packages("plotly")
+library(plotly)
+library(ggplot2)
+```
+```{r}
+set.seed(10)
+datosUSA <- USArrests
+
+k3USAarrest = kmeans(USArrests,3)
+k4USAarrest = kmeans(USArrests,4)
+k5USAarrest = kmeans(USArrests,5)
+
+cluster3_table <- table(k3USAarrest$cluster)
+cluster4_table <- table(k4USAarrest$cluster)
+cluster5_table <- table(k5USAarrest$cluster)
+
+#K=3
+USArrests[k3USAarrest$cluster== 1,]
+USArrests[k3USAarrest$cluster== 2,]
+USArrests[k3USAarrest$cluster== 3,]
+
+#K=4
+USArrests[k4USAarrest$cluster== 1,]
+USArrests[k4USAarrest$cluster== 2,]
+USArrests[k4USAarrest$cluster== 3,]
+USArrests[k4USAarrest$cluster== 4,]
+
+#K=5
+USArrests[k5USAarrest$cluster== 1,]
+USArrests[k5USAarrest$cluster== 2,]
+USArrests[k5USAarrest$cluster== 3,]
+USArrests[k5USAarrest$cluster== 4,]
+USArrests[k5USAarrest$cluster== 5,]
+
+```
+```{r}
+#Urban Pop
+plot_ly(datosUSA, x = ~Murder, y = ~Rape, z = ~Assault, 
+        type = "scatter3d", mode = "markers", color = ~UrbanPop, 
+        marker = list(size = 4))
+
+#K=3
+plot_ly(datosUSA, x = ~Murder, y = ~Rape, z = ~Assault, 
+        type = "scatter3d", mode = "markers", color = ~as.factor(k3USAarrest$cluster), 
+        marker = list(size = 4))
+
+#K=4
+plot_ly(datosUSA, x = ~Murder, y = ~Rape, z = ~Assault, 
+        type = "scatter3d", mode = "markers", color = ~as.factor(k4USAarrest$cluster), 
+        marker = list(size = 4))
+
+#K=5
+plot_ly(datosUSA, x = ~Murder, y = ~Rape, z = ~Assault, 
+        type = "scatter3d", mode = "markers", color = ~as.factor(k5USAarrest$cluster), 
+        marker = list(size = 4))
+
+```
+
+```{r}
+wss <- c()
+for(k in 3:5){
+  km <- kmeans(USArrests, k)
+  wss[k-2] <- km$tot.withinss
+}
+
+# plot la relacion entre k y la distancia intracluster al cuadrado
+plot(3:5, wss, type = "b", xlab = "Nro de clusters (k)", ylab = "Relacion al cuadrado de las distancias intra cluster")
+
+
+
+wss <- c()
+for(k in 1:8){
+  km <- kmeans(USArrests, k)
+  wss[k] <- km$tot.withinss
+}
+
+# plot la relacion entre k y la distancia intracluster al cuadrado
+plot(1:8, wss, type = "b", xlab = "Nro de clusters (k)", ylab = "Relacion al cuadrado de las distancias intra cluster")
+
+
+```

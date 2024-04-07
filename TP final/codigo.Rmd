@@ -1,0 +1,429 @@
+---
+title: "Tp Final"
+output: html_document
+date: "2023-03-04"
+---
+
+```{r}
+datos <- read.csv("dropout.csv")
+library(ggplot2)
+library(dplyr)
+library(plotly)
+library(gridExtra)
+library(caret)
+library(rpart.plot)
+library(class)
+set.seed(125)
+
+
+```
+```{r}
+datos$Target <- as.factor(datos$Target)
+
+datos <- datos %>% 
+  mutate(Gender = case_when(
+    Gender == 0 ~ "mujer",
+    Gender == 1 ~ "hombre",
+    TRUE ~ NA_character_
+  ))
+datos$Gender <- as.factor(datos$Gender)
+
+
+datos <- datos %>% 
+  mutate(Marital.status = case_when(
+    Marital.status == 1 ~ "single",
+    Marital.status == 2 ~ "married",
+    Marital.status == 3 ~ "widower",
+    Marital.status == 4 ~ "divorced",
+    Marital.status == 5 ~ "facto union",
+    Marital.status == 6 ~ "legally separated",
+    TRUE ~ NA_character_
+  ))
+
+datos$Marital.status <- as.factor(datos$Marital.status)
+
+datos <- datos %>% 
+  mutate(Course = case_when(
+    Course == 1 ~ "Biofuel Production Technologies",
+    Course == 2 ~ "Animation and Multimedia Design",
+    Course == 3 ~ "Social Service (evening attendance)",
+    Course == 4 ~ "Agronomy",
+    Course == 5 ~ "Communication Design",
+    Course == 6 ~ "Veterinary Nursing",
+    Course == 7 ~ "Informatics Engineering",
+    Course == 8 ~ "Equinculture",
+    Course == 9 ~ "Management",
+    Course == 10 ~ "Social Service",
+    Course == 11 ~ "Tourism",
+    Course == 12 ~ "Nursing",
+    Course == 13 ~ "Oral Hygiene",
+    Course == 14 ~ "Advertising and Marketing Management",
+    Course == 15 ~ "Journalism and Communication",
+    Course == 16 ~ "Basic Education",
+    Course == 17 ~ "Management",
+    TRUE ~ NA_character_
+  ))
+
+datos$Course <- as.factor(datos$Course)
+
+
+datos <- datos %>% 
+  mutate(Nacionality = case_when(
+    Nacionality == 1 ~ "Portuguese",
+    Nacionality == 2 ~ "German",
+    Nacionality == 3 ~ "Spanish",
+    Nacionality == 4 ~ "Italian",
+    Nacionality == 5 ~ "Dutch",
+    Nacionality == 6 ~ "English",
+    Nacionality == 7 ~ "Lithuanian",
+    Nacionality == 8 ~ "Angolan",
+    Nacionality == 9 ~ "Cape Verdean",
+    Nacionality == 10 ~ "Guinean",
+    Nacionality == 11 ~ "Mozambican",
+    Nacionality == 12 ~ "Santomean",
+    Nacionality == 13 ~ "Turkish",
+    Nacionality == 14 ~ "Brazilian",
+    Nacionality == 15 ~ "Romanian",
+    Nacionality == 16 ~ "Moldova",
+    Nacionality == 17 ~ "Mexican",
+    Nacionality == 18 ~ "Ukrainian",
+    Nacionality == 19 ~ "Russian",
+    Nacionality == 20 ~ "Cuban",
+    Nacionality == 21 ~ "Colombian",
+    TRUE ~ NA_character_
+  ))
+
+datos$Displaced <- as.logical(datos$Displaced)
+datos$Educational.special.needs <- as.logical(datos$Educational.special.needs)
+datos$Debtor <- as.logical(datos$Debtor)
+datos$Tuition.fees.up.to.date <- as.logical(datos$Tuition.fees.up.to.date)
+datos$Scholarship.holder <- as.logical(datos$Scholarship.holder)
+
+
+bool_cols <- c("Displaced", "Educational.special.needs", "Debtor", "Tuition.fees.up.to.date", "Scholarship.holder")
+datos[bool_cols] <- lapply(datos[bool_cols], factor)
+
+datos$Nacionality <- as.factor(datos$Nacionality)
+```
+```{r}
+occupation_map_mujeres <- c("Secondary Degree",
+                    "Bachelor's Degree",
+                    "Bachelor's Degree",
+                    "Master's",
+                    "Doctorate",
+                    NA,
+                    NA,
+                    NA,
+                    "Uncompleted secondary school",
+                    "Uncompleted secondary school",
+                    NA,
+                    "Uncompleted secondary school",
+                    "Specialized course",
+                    "Uncompleted secondary school",
+                    NA,
+                    NA,
+                    NA,
+                    "Specialized course",
+                    "Uncompleted secondary school",
+                    NA,
+                    "Specialized course",
+                    NA,
+                    NA,
+                    NA,
+                    "Uncompleted primary school",
+                    "Uncompleted secondary school",
+                    NA,
+                    "Uncompleted secondary school",
+                    NA,
+                    NA,
+                    "Uncompleted primary school",
+                    "Uncompleted primary school",
+                    "Uncompleted primary school",
+                    "Uncompleted primary school",
+                    "Specialized course",
+                    "Secondary Degree",
+                    "Specialized course",
+                    "Specialized course",
+                    "Bachelor's Degree",
+                    "Master's")
+
+# Map occupation codes to names in a new column in the dataframe
+datos$Mother.s.occupation.name <- occupation_map_mujeres[datos$Mother.s.occupation]
+datos$Mother.s.occupation.name <- as.factor(datos$Mother.s.occupation.name)
+
+
+occupation_map_hombres <- c("Secondary Degree",
+                    "Bachelor's Degree",
+                    "Bachelor's Degree",
+                    "Master's",
+                    "Doctorate",
+                    NA,
+                    NA,
+                    NA,
+                    "Uncompleted secondary school",
+                    "Uncompleted secondary school",
+                    NA,
+                    "Uncompleted secondary school",
+                    "Specialized course",
+                    "Uncompleted secondary school",
+                    NA,
+                    NA,
+                    NA,
+                    "Specialized course",
+                    "Uncompleted secondary school",
+                    NA,
+                    "Specialized course",
+                    NA,
+                    NA,
+                    NA,
+                    "Uncompleted primary school",
+                    "Uncompleted secondary school",
+                    NA,
+                    "Uncompleted secondary school",
+                    NA,
+                    NA,
+                    "Uncompleted primary school",
+                    "Uncompleted primary school",
+                    "Uncompleted primary school",
+                    "Uncompleted primary school",
+                    "Specialized course",
+                    "Secondary Degree",
+                    "Specialized course",
+                    "Specialized course",
+                    "Bachelor's Degree",
+                    "Master's")
+
+# Map occupation codes to names in a new column in the dataframe
+datos$Father.s.occupation.name <- occupation_map_hombres[datos$Father.s.occupation]
+datos$Father.s.occupation.name <- as.factor(datos$Father.s.occupation.name)
+
+datos$promedioNotas <- (datos$Curricular.units.1st.sem..grade. + datos$Curricular.units.2nd.sem..grade.) / 2
+
+
+datos_mujer <- datos %>% filter(Gender == "mujer")
+datos_hombre <- datos %>% filter(Gender == "hombre")
+```
+```{r}
+#Por genero
+ggplot(datos, aes(x = Gender, fill = Gender)) +
+  geom_bar() +
+  labs(x = "Genero", y = "Cantidad", title = "Distribucion de Genero") +
+  scale_fill_manual(values = c("steelblue", "pink")) +
+  theme_minimal() +
+  theme(axis.text = element_text(size = 12, color = "black"),
+        axis.title = element_text(size = 14),
+        plot.title = element_text(size = 16, face = "bold"))
+
+#Por estado civil
+contarMaritalStatus <- data.frame(table(datos$Marital.status))
+
+ggplot(contarMaritalStatus, aes(x = reorder(Var1, -Freq), y = Freq, fill = Var1)) +
+  geom_bar(stat = "identity") +
+  geom_text(aes(label = Freq), vjust = -0.5, size = 2) +
+  labs(x = "Estado Civil", y = "Cantidad", title = "Distribucion del estado civil") +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1))
+
+#Ocupacion materna
+contarMotherOccupation <- data.frame(table(datos$Mother.s.occupation.name, useNA = "always"))
+
+ggplot(contarMotherOccupation, aes(x = reorder(Var1, -Freq), y = Freq, fill = Var1)) +
+  geom_bar(stat = "identity") +
+  geom_text(aes(label = Freq), vjust = -0.5, size = 2) +
+  labs(x = "Educacion", y = "Cantidad", title = "Distribucion de la educacion de la madre") +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1, size = 6))
+
+#Ocupacion paterna
+contarFatherOccupation <- data.frame(table(datos$Father.s.occupation.name, useNA = "always"))
+
+ggplot(contarFatherOccupation, aes(x = reorder(Var1, -Freq), y = Freq, fill = Var1)) +
+  geom_bar(stat = "identity") +
+  geom_text(aes(label = Freq), vjust = -0.5, size = 2) +
+  labs(x = "Educacion", y = "Cantidad", title = "Distribucion de la educacion de la padre") +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1, size = 6))
+```
+```{r}
+ggplot(datos, aes(x = Target, fill = Target)) +
+  geom_bar() +
+  labs(x = "Target", y = "Cantidad", title = "Distribucion de Target") +
+  scale_fill_manual(values = c("red", "yellow", "green")) +
+  theme_minimal() +
+  theme(axis.text = element_text(size = 12, color = "black"),
+        axis.title = element_text(size = 14),
+        plot.title = element_text(size = 16, face = "bold"))
+
+
+ggplot(data = datos, aes(x = Curricular.units.1st.sem..grade., y = Curricular.units.2nd.sem..grade., color = Target)) + 
+  geom_point(size = 1) +
+  scale_colour_brewer(palette = "Set1") +
+  labs(x = "1st Semester Grade", y = "2nd Semester Grade", color = "Target") +
+  theme_minimal()
+
+datos_notas_filtradas <- datos %>% filter(Curricular.units.1st.sem..grade. >= 10 & Curricular.units.2nd.sem..grade.>= 10)
+
+ggplot(datos_notas_filtradas, aes(x=Curricular.units.1st.sem..grade., y=Curricular.units.2nd.sem..grade., color=Target)) + geom_point() +
+  geom_smooth(method="lm", se=FALSE)+
+  geom_point(size=0.05, shape=18) +
+  scale_colour_brewer(palette = "Set1")
+
+
+ggplot(datos_notas_filtradas, aes(x=Curricular.units.1st.sem..grade., y=Curricular.units.2nd.sem..grade., color=Gender)) + geom_point() +
+  geom_smooth(method="lm", se=FALSE)+
+  geom_point(size=0.05, shape=18) +
+  scale_color_manual(values = c("steelblue", "pink"))
+```
+```{r}
+ggplot(data=datos, aes(x = Target, fill = Gender)) +
+  geom_bar(position = "stack") +
+  scale_fill_manual(values = c("steelblue","pink")) +
+  labs(x = "Target", y = "Cantidad") +
+  theme_minimal() +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1))
+
+targetMujeres <- ggplot(data=datos_mujer, aes(x = Target, fill = Target)) +
+  geom_bar(position = "stack") +
+  scale_fill_manual(values = c("green","yellow","red")) +
+  labs(x = "Target Mujeres", y = "Cantidad") +
+  theme_minimal() +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1))
+
+targetHombres <- ggplot(data=datos_hombre, aes(x = Target, fill = Target)) +
+  geom_bar(position = "stack") +
+  scale_fill_manual(values = c("green","yellow","red")) +
+  labs(x = "Target Hombres", y = "Cantidad") +
+  theme_minimal() +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1))
+
+grid.arrange(targetMujeres, targetHombres, ncol = 2)
+
+
+#Carreras por genero
+ggplot(data=datos, aes(x = Course, fill = Gender)) +
+  geom_bar(position = "stack") +
+  scale_fill_manual(values = c("steelblue", "pink")) +
+  labs(x = "Carrera", y = "Cantidad") +
+  theme_minimal() +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1)) +
+  coord_flip()
+
+#Carreras por target
+ggplot(data=datos, aes(x = Course, fill = Target)) +
+  geom_bar(position = "stack") +
+  scale_fill_manual(values = c("red", "blue", "green")) +
+  labs(x = "Carrera", y = "Cantidad") +
+  theme_minimal() +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1)) +
+  coord_flip()
+
+#Carreras en mujeres por target
+ggplot(data=datos_mujer, aes(x = Course, fill = Target)) +
+  geom_bar(position = "stack") +
+  scale_fill_manual(values = c("red", "blue", "green")) +
+  labs(x = "Carreras de las mujeres", y = "Cantidad") +
+  theme_minimal() +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1)) +
+  coord_flip()
+
+#Carreras en hombres por target
+ggplot(data=datos_hombre, aes(x = Course, fill = Target)) +
+  geom_bar(position = "stack") +
+  scale_fill_manual(values = c("red", "blue", "green")) +
+  labs(x = "Carreras de los hombres", y = "Cantidad") +
+  theme_minimal() +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1)) +
+  coord_flip()
+```
+```{r}
+ggplot(data=datos, aes(x = Target, fill = Tuition.fees.up.to.date)) +
+  geom_bar(position = "stack") +
+  scale_fill_manual(values = c("red","green")) +
+  labs(x = "Target", y = "Cantidad") +
+  theme_minimal() +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1))
+
+ggplot(data=datos, aes(x = Target, fill = International)) +
+  geom_bar(position = "stack") +
+  scale_fill_manual(values = c("red","green")) +
+  labs(x = "Target", y = "Cantidad") +
+  theme_minimal() +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1))
+
+ggplot(data=datos, aes(x = Target, fill = Scholarship.holder)) +
+  geom_bar(position = "stack") +
+  scale_fill_manual(values = c("red","green")) +
+  labs(x = "Target", y = "Cantidad") +
+  theme_minimal() +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1))
+```
+```{r}
+#Empezamos a clusterizar pero no es por aca
+plot_ly(datos, x = ~Inflation.rate, y = ~GDP, z = ~Unemployment.rate, 
+        type = "scatter3d", mode = "markers", color = ~Target, 
+        marker = list(size = 3), na.rm = FALSE)
+
+# Add jitter to the x and y coordinates
+inflacion <- jitter(datos$Inflation.rate, factor = 4)
+pbi <- jitter(datos$GDP, factor = 4)
+tasaDesempleo <- jitter(datos$Unemployment.rate, factor = 4)
+
+# Create the plot with jittered points
+plot <- plot_ly(datos, x = ~inflacion, y = ~pbi, z = ~tasaDesempleo, color = ~as.factor(Target)) %>%
+  add_markers(marker = list(size = 2))
+
+# Adjust the size of the legend symbols
+plot %>% layout(showlegend = TRUE, legend = list(itemsizing = "constant"))
+```
+```{r}
+#Arboles de decision
+train_idx <- createDataPartition(datos$Target, p = 0.8, list = FALSE)
+train <- datos[train_idx, ]
+test <- datos[-train_idx, ]
+
+tree <- rpart(Target ~ ., data = train, method = "class", control = rpart.control(maxdepth = 7 ))
+y_pred <- predict(tree, test, type = "class")
+matrizConfusion <- confusionMatrix(y_pred, test$Target)
+
+rpart.plot(tree)
+matrizConfusion
+```
+```{r}
+datosSinNotas <- datos[, !(names(datos) %in% c("Curricular.units.2nd.sem..approved.", "Curricular.units.2nd.sem..approved.", "Curricular.units.2nd.sem..grade.", "Curricular.units.1st.sem..approved.","Curricular.units.2nd.sem..evaluations.","promedioNotas","Curricular.units.1st.sem..grade.","Curricular.units.1st.sem..evaluations.","Curricular.units.2nd.sem..enrolled.","Curricular.units.1st.sem..credited.","Application.mode","Application.order","Mother.s.occupation","Father.s.occupation"))]
+train_idxSinNotas <- createDataPartition(datosSinNotas$Target, p = 0.8, list = FALSE)
+trainSinNotas <- datosSinNotas[train_idxSinNotas, ]
+testSinNotas <- datosSinNotas[-train_idxSinNotas, ]
+
+treeSinNotas <- rpart(Target ~ ., data = trainSinNotas, method = "class", control = rpart.control(maxdepth = 9))
+y_predSinNotas <- predict(treeSinNotas, testSinNotas, type = "class")
+matrizConfusionSinNotas <- confusionMatrix(y_predSinNotas, testSinNotas$Target)
+rpart.plot(treeSinNotas)
+matrizConfusionSinNotas
+
+```
+
+```{r}
+df <- na.omit(datos)
+datosConNotas <- datos[, (names(df) %in% c("Curricular.units.2nd.sem..approved.", "Curricular.units.1st.sem..approved.", "Curricular.units.2nd.sem..grade.", "Curricular.units.1st.sem..grade.","Curricular.units.2nd.sem..evaluations.","Curricular.units.1st.sem..evaluations.","Curricular.units.1st.sem..enrolled.","Curricular.units.2nd.sem..enrolled.","Curricular.units.1st.sem..credited.","Curricular.units.2nd.sem..credited.", "Target"))]
+
+train_indexSinNA <- sample(nrow(datosConNotas), 0.8*nrow(datosConNotas))
+trainSinNA <- datosConNotas[train_indexSinNA,]
+testSinNA <- datosConNotas[-train_indexSinNA,]
+predictors <- as.matrix(trainSinNA[, -which(names(trainSinNA) == "Target")])
+response <- trainSinNA$Target
+
+
+k_values <- c(1:20)
+accuracy_values <- numeric(length(k_values))
+
+for (i in seq_along(k_values)) {
+  k <- k_values[i]
+  knn_model <- knn(train = predictors, test = as.matrix(testSinNA[, -which(names(testSinNA) == "Target")]), cl = response, k = k)
+  
+  # Calculate the accuracy of the model on the test set
+  accuracy <- sum(knn_model == testSinNA$Target)/nrow(testSinNA)
+  
+  # Store the accuracy value
+  accuracy_values[i] <- accuracy
+}
+
+# Plot the accuracy against the different k values
+plot(k_values, accuracy_values, type = "b", xlab = "k", ylab = "Accuracy")
+```

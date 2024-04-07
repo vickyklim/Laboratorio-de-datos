@@ -1,0 +1,132 @@
+---
+title: "pinguinos"
+output: html_document
+date: "2023-02-16"
+---
+
+```{r}
+library(palmerpenguins)
+data(package = 'palmerpenguins')
+attach(penguins)
+data = penguins
+install.packages("ggplot2")
+library("ggplot2")
+
+plot(penguins, pch=20)
+```
+
+```{r}
+ggplot(penguins, aes(x=factor(island)))+
+ geom_bar(stat="count", width=0.7, fill=c("mediumpurple3",
+"chocolate", "skyblue"))+
+  labs(y = "Cantidad de pinguinos", x = "Islas")+
+ theme_light()
+
+ggplot(penguins, aes(x=factor(species)))+
+ geom_bar(stat="count", width=0.7, fill=c("mediumpurple3",
+"chocolate", "skyblue"))+
+  labs(y = "Cantidad de pinguinos", x = "Especies")+
+ theme_light()
+
+ggplot(penguins, aes(x=species, y=island, color=sex)) + geom_jitter()
+```
+Graficos de las especies con sus medidas
+```{r}
+qplot(factor(species), bill_depth_mm, data=penguins,
+ geom=c("violin"), trim = FALSE,  fill = factor(species))+ 
+  geom_boxplot(width=0.1)+
+  labs(y = "Profundidad de pico", x = "Especies")
+
+qplot(factor(species), bill_length_mm, data=penguins,
+ geom=c("violin"), trim = FALSE,  fill = factor(species))+ 
+  geom_boxplot(width=0.1)+
+  labs(y = "Longitud de pico", x = "Especies")
+
+qplot(factor(species), body_mass_g, data=penguins,
+ geom=c("violin"), trim = FALSE,  fill = factor(species))+ 
+  geom_boxplot(width=0.1)+
+  labs(y = "Body mass (g)", x = "Especies")
+
+qplot(factor(species), flipper_length_mm, data=penguins,
+ geom=c("violin"), trim = FALSE,  fill = factor(species))+ 
+  geom_boxplot(width=0.1)+
+  labs(y = "Aletas (mm)", x = "Especies")
+
+
+tablaEspecieSex<-table(species,sex)
+mosaicplot(tablaEspecieSex, main="Gráfico de mosaicos especie y sexo",
+col=c("mediumpurple3", "chocolate"))
+
+```
+```{r}
+ggplot(penguins, aes(x=species, y=bill_depth_mm, color=sex)) + geom_jitter()
+
+ggplot(penguins, aes(x=species, y=bill_length_mm , color=sex)) + geom_jitter()
+
+ggplot(penguins, aes(x=species, y=body_mass_g , color=sex)) + geom_jitter()
+
+ggplot(penguins, aes(x=species, y=flipper_length_mm , color=sex)) + geom_jitter()
+```
+```{r}
+ggplot(penguins, aes(x=bill_depth_mm, y=bill_length_mm, color=species)) + geom_point() +
+  geom_smooth(method="lm", se=FALSE)+
+  geom_point(col="white", size=0.1) +
+  scale_colour_brewer(palette = "Set1")
+
+ggplot(penguins, aes(x=body_mass_g, y=flipper_length_mm, color=species)) + geom_point() +
+  geom_smooth(method="lm", se=FALSE)+
+  geom_point(col="white", size=0.1) +
+  scale_colour_brewer(palette = "Set1")
+
+```
+```{r}
+qplot(factor(island), bill_depth_mm, data=penguins,
+ geom=c("violin"), trim = FALSE,  fill = factor(island))+ 
+  geom_boxplot(width=0.1)+
+  labs(y = "Profundidad de pico", x = "Islas")
+
+
+qplot(factor(island), bill_length_mm, data=penguins,
+ geom=c("violin"), trim = FALSE,  fill = factor(island))+ 
+  geom_boxplot(width=0.1)+
+  labs(y = "Longitud de pico", x = "Islas")
+
+qplot(factor(island), body_mass_g, data=penguins,
+ geom=c("violin"), trim = FALSE,  fill = factor(island))+ 
+  geom_boxplot(width=0.1)+
+  labs(y = "Body mass (g)", x = "Islas")
+
+qplot(factor(island), flipper_length_mm, data=penguins,
+ geom=c("violin"), trim = FALSE,  fill = factor(island))+ 
+  geom_boxplot(width=0.1)+
+  labs(y = "Aletas (mm)", x = "Islas")
+
+```
+Filtro por especie Adelie
+```{r}
+pinguinosAdelie <- penguins[penguins$species == "Adelie",]
+
+qplot(factor(island), bill_depth_mm, data=pinguinosAdelie,
+ geom=c("violin"), trim = FALSE,  fill = factor(island))+ 
+  geom_boxplot(width=0.1)+
+  labs(y = "Profundidad de pico", x = "Islas")
+
+
+qplot(factor(island), bill_length_mm, data=pinguinosAdelie,
+ geom=c("violin"), trim = FALSE,  fill = factor(island))+ 
+  geom_boxplot(width=0.1)+
+  labs(y = "Longitud de pico", x = "Islas")
+
+qplot(factor(island), body_mass_g, data=pinguinosAdelie,
+ geom=c("violin"), trim = FALSE,  fill = factor(island))+ 
+  geom_boxplot(width=0.1)+
+  labs(y = "Body mass (g)", x = "Islas")
+
+qplot(factor(island), flipper_length_mm, data=pinguinosAdelie,
+ geom=c("violin"), trim = FALSE,  fill = factor(island))+ 
+  geom_boxplot(width=0.1)+
+  labs(y = "Aletas (mm)", x = "Islas")
+```
+```{r}
+ggplot(penguins, aes(x=species, y=island, color=year)) + geom_jitter()
+```
